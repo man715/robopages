@@ -27,7 +27,7 @@ functions:
       - sudo
       - nmap
       - -sS
-      - -P0 
+      - -Pn
       - -A
       - -vvv    
       - ${target}
