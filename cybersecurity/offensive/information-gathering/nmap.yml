@@ -16,8 +16,9 @@ functions:
           - scanme.nmap.org
 
     container:
-      build: ${cwd}/nmap.Dockerfile
-      name: nmap_local
+      build: 
+        path: ${cwd}/nmap.Dockerfile
+        name: nmap_local
       args:
         - --net=host
       volumes:
@@ -44,8 +45,9 @@ functions:
           - scanme.nmap.org
 
     container:
-      build: ${cwd}/nmap.Dockerfile
-      name: nmap_local
+      build: 
+        path: ${cwd}/nmap.Dockerfile
+        name: nmap_local
       args:
         - --net=host
       volumes:
