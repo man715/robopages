@@ -12,8 +12,9 @@ functions:
           - /Applications/Firefox.app/Contents/MacOS/firefox
 
     # platform specific command lines
+    # https://doc.rust-lang.org/std/env/consts/constant.OS.html
     platforms:
-      darwin:
+      macos:
         - nm
         - -gU
         - ${file_path}
