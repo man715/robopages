@@ -21,6 +21,11 @@ functions:
           - https://example.com/path/to/resource
           - https://example.com/path/to/resource?query=string
 
+    container:
+      image: alpine/curl
+      args:
+        - --net=host
+
     cmdline:
       - curl
       - -s
@@ -62,6 +67,11 @@ functions:
           - https://example.com
           - https://example.com/path/to/resource
           - https://example.com/path/to/resource?query=string
+
+    container:
+      image: alpine/curl
+      args:
+        - --net=host
 
     cmdline:
       - curl
