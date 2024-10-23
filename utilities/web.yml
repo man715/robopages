@@ -1,0 +1,30 @@
+description: A set of web related utilities.
+
+functions:
+  http_get:
+    description: Perform an HTTP GET request to a given URL.
+    parameters:
+      user_agent:
+        type: string
+        required: false
+        description: An optional, NON EMPTY User-Agent string to use for the request.
+        examples:
+          - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+          - "curl/7.86.0"
+          - "robopages"
+
+      url:
+        type: string
+        description: The URL to perform the GET request on.
+        examples:
+          - https://example.com
+          - https://example.com/path/to/resource
+          - https://example.com/path/to/resource?query=string
+
+    cmdline:
+      - curl
+      - -s
+      - -L
+      - -A
+      - "${user_agent or robopages}"
+      - "${url}"
