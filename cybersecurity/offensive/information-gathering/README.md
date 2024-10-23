@@ -1,0 +1,3 @@
+# Information Gathering Tools
+
+This module provides a set of tools designed for information gathering in offensive cybersecurity operations. These utilities assist in reconnaissance and data collection, enabling security professionals to gather valuable intelligence about target systems and networks. The tools in this category focus on passive and active information gathering techniques, helping to build a comprehensive understanding of the target environment while maintaining operational security.
