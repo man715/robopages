@@ -6,7 +6,11 @@ Like [man pages](https://en.wikipedia.org/wiki/Man_page) but for robots!
 
 ## Usage
 
-Download this repository and copy it to your system `~/.robopages/` folder. Refer to https://github.com/dreadnode/robopages-cli for usage information.
+1. Install the robopages server by following the instructions in the [robopages-cli](https://github.com/dreadnode/robopages-cli) repository.
+2. [Download this repository](https://github.com/dreadnode/robopages/archive/refs/heads/main.zip) and copy it to your system `~/.robopages/` folder (or run the `robopages install` command).
+3. Start the server by running `robopages serve`.
+
+Your tools are now available at `http://localhost:8080/` for any LLM to use. Refer to the [robopages-cli](https://github.com/dreadnode/robopages-cli) repository for usage information and examples.
 
 ## Syntax
 
@@ -140,4 +144,35 @@ functions:
       - -Pn
       - -A
       - ${target}
+```
+
+If you don't want to use containers and need to specify different platform specific command lines:
+
+description: Function to print exported and imported symbols from a binary.
+
+```yaml
+functions:
+  print_exported_symbols_in_file:
+    description: Find the exported symbols in an executable file or a library.
+    parameters:
+      file_path:
+        type: string
+        description: The path to the file to scan.
+        examples:
+          - /path/to/binary
+          - /Applications/Firefox.app/Contents/MacOS/firefox
+
+    # platform specific command lines
+    # https://doc.rust-lang.org/std/env/consts/constant.OS.html
+    platforms:
+      macos:
+        - nm
+        - -gU
+        - ${file_path}
+
+      linux:
+        - readelf
+        - -Ws
+        - --dyn-syms
+        - ${file_path}
 ```
