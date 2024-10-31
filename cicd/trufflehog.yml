@@ -1,0 +1,20 @@
+description: TruffleHog is the most powerful secrets Discovery, Classification, Validation, and Analysis tool. In this context secret refers to a credential a machine uses to authenticate itself to another machine. This includes API keys, database passwords, private encryption keys, and more.
+
+functions:
+  trufflehog_scan:
+    description: Scan a GitHub repository for secrets using TruffleHog.
+    parameters:
+      repo:
+        type: string
+        description: The GitHub repository URL to scan.
+        examples:
+          - https://github.com/trufflesecurity/trufflehog.git
+    container:
+      force: true
+      image: trufflesecurity/trufflehog
+      args:
+        - --net=host
+    cmdline:
+        - trufflehog
+        - git
+        - ${repo}
