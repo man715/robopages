@@ -1,0 +1,103 @@
+name: Validate Contributions
+
+on:
+  pull_request:
+    paths:
+      - '**.yml'
+      - '!.github/**'
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate Contribution Files
+        id: robopages-validation
+        continue-on-error: true
+        run: |
+          validate_file() {
+            local file="$1"
+
+            if [[ ! "$file" =~ ^[a-zA-Z0-9_\-./]+\.yml$ ]]; then
+              echo "Invalid file path characters: $file"
+              return 1
+            }
+
+            if [[ "$file" == *"../"* ]]; then
+              echo "Directory traversal attempt detected: $file"
+              return 1
+            }
+
+            docker pull dreadnode/robopages:latest@sha256:f65195e7aaf5
+
+            # Run validation
+            docker run --rm \
+              -v $(pwd):/workspace \
+              -w /workspace \
+              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")"
+          }
+
+          # Get changed files, excluding .github directory
+          changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | \
+            grep '\.yml$' | grep -v '^.github/' || true)
+
+          # Validate each changed file
+          for file in $changed_files; do
+            echo "Validating $file..."
+            validate_file "$file" || exit 1
+          done
+
+      - name: Fallback YAML validation
+        if: steps.robopages-validation.outcome == 'failure'
+        run: |
+          # Install validation tools
+          sudo apt-get update
+          sudo apt-get install -y yamllint yq
+
+          # Get changed files, excluding .github directory
+          changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | \
+            grep '\.yml$' | grep -v '^.github/' || true)
+
+          for file in $changed_files; do
+            echo "Validating $file..."
+
+            # Strict YAML syntax validation
+            yamllint -c .yamllint.strict "$file" || exit 1
+
+            # Comprehensive field validation
+            yq e '
+              .description | length > 0 and
+              .functions | length > 0 and
+              (.functions[] |
+                select(has("description") and
+                       has("parameters") and
+                       (has("container") or has("cmdline")))
+              )' "$file" || exit 1
+          done
+
+      - name: Post validation status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const validation_status = '${{ steps.robopages-validation.outcome }}' === 'success' ?
+              'Primary validation successful' :
+              'Using fallback validation';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Validation Results\n${validation_status}\n\nPlease ensure your contribution follows the required format.`
+            });
