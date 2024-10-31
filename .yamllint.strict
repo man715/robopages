@@ -1,0 +1,57 @@
+extends: default
+
+rules:
+  document-start: disable
+  line-length: disable
+  comments:
+    min-spaces-from-content: 1
+  indentation:
+    spaces: 2
+    indent-sequences: true
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+  truthy:
+    allowed-values: ['true', 'false']
+    check-keys: true
+
+# Required structure validation
+schema:
+  required:
+    - description
+    - functions
+  mapping:
+    description:
+      type: str
+    functions:
+      type: map
+      mapping:
+        regex;(.*):
+          type: map
+          required:
+            - description
+            - parameters
+            - cmdline
+          mapping:
+            description:
+              type: str
+            parameters:
+              type: map
+              mapping:
+                regex;(.*):
+                  type: map
+                  required:
+                    - type
+                    - description
+                    - examples
+            container:
+              type: map
+              required:
+                - image
+            cmdline:
+              type: seq
+              sequence:
+                - type: str

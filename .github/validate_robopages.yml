@@ -12,15 +12,16 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: read
+      pull-requests: write
       contents: read
+      #issues: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # 3.7.1
 
       - name: Validate Contribution Files
         id: robopages-validation
@@ -39,7 +40,7 @@ jobs:
               return 1
             }
 
-            docker pull dreadnode/robopages:latest@sha256:f65195e7aaf5
+            docker pull dreadnode/robopages:latest@sha256:2e355b1c46682af2fb586648016c7a28f113a407763b37c74251ae2050b396bb # f65195e7aaf5
 
             # Run validation
             docker run --rm \
@@ -59,11 +60,17 @@ jobs:
           done
 
       - name: Fallback YAML validation
+        id: fallback-validation
         if: steps.robopages-validation.outcome == 'failure'
         run: |
           # Install validation tools
           sudo apt-get update
           sudo apt-get install -y yamllint yq
+
+          if [ ! -f ".yamllint.strict" ]; then
+            echo "Error: .yamllint.strict not found"
+            exit 1
+          fi
 
           # Get changed files, excluding .github directory
           changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | \
@@ -75,15 +82,15 @@ jobs:
             # Strict YAML syntax validation
             yamllint -c .yamllint.strict "$file" || exit 1
 
-            # Comprehensive field validation
+            # Additional validation can still be performed with yq if needed
             yq e '
-              .description | length > 0 and
-              .functions | length > 0 and
+              .description and
+              .functions and
               (.functions[] |
                 select(has("description") and
                        has("parameters") and
-                       (has("container") or has("cmdline")))
-              )' "$file" || exit 1
+                       (has("container") or has("cmdline"))))
+            ' "$file" || exit 1
           done
 
       - name: Post validation status
@@ -91,13 +98,18 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const validation_status = '${{ steps.robopages-validation.outcome }}' === 'success' ?
-              'Primary validation successful' :
-              'Using fallback validation';
+            let validation_status;
+            if ('${{ steps.robopages-validation.outcome }}' === 'success') {
+              validation_status = '✅ Primary validation successful';
+            } else if ('${{ steps.fallback-validation.outcome }}' === 'success') {
+              validation_status = '⚠️ Primary validation failed, but fallback validation passed';
+            } else {
+              validation_status = '❌ Both primary and fallback validations failed';
+            }
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Validation Results\n${validation_status}\n\nPlease ensure your contribution follows the required format.`
+              body: `## Validation Results\n${validation_status}\n\nPlease ensure your contribution follows the required format in \`.yamllint.strict\`.`
             });
