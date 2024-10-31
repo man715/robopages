@@ -1,0 +1,71 @@
+description: Web applications use parameters (or queries) to accept user input. Arjun finds valid HTTP parameters with a huge default dictionary of 10,985 parameter names.
+
+functions:
+  arjun_target_scan:
+    description: Run Arjun against a single target.
+    parameters:
+      target:
+        type: string
+        description: The target of the page to fetch.
+        examples:
+        - https://api.example.com/endpoint
+    container:
+      force: true
+      image: secsi/arjun
+      args:
+        - --net=host
+    cmdline:
+    - arjun
+    - -u
+    - ${target}
+
+  arjun_target_scan_osint:
+    description: You can collect parameter names for a domain (not subdomain) from CommonCrawl, Open Threat Exchange and WaybackMachine and check if they exist on your targets. This may take long processing times.
+    parameters:
+      target:
+        type: string
+        description: The target of the page to fetch.
+        examples:
+        - https://api.example.com/endpoint
+    container:
+      force: true
+      image: secsi/arjun
+      args:
+        - --net=host
+    cmdline:
+    - arjun
+    - -u
+    - ${target}
+    - --passive
+
+  arjun_http_method_target_scan:
+    description: GET by default, available methods are GET/POST/JSON/XML
+    parameters:
+      target:
+        type: string
+        description: The target of the page to fetch.
+        examples:
+          - https://api.example.com/endpoint
+      method:
+        type: string
+        description: The supported HTTP method
+        examples:
+          - GET
+      headers:
+        type: string
+        description: You can simply add custom headers from command line separated by \n.
+        examples:
+          - "Accept-Language: en-US\nCookie: null"
+    container:
+      force: true
+      image: secsi/arjun
+      args:
+        - --net=host
+    cmdline:
+    - arjun
+    - -u
+    - ${target}
+    - -m
+    - ${method}
+    - --headers
+    - ${headers}
