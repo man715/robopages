@@ -59,57 +59,18 @@ jobs:
             validate_file "$file" || exit 1
           done
 
-      - name: Fallback YAML validation
-        id: fallback-validation
-        if: steps.robopages-validation.outcome == 'failure'
-        run: |
-          # Install validation tools
-          sudo apt-get update
-          sudo apt-get install -y yamllint yq
-
-          if [ ! -f ".yamllint.strict" ]; then
-            echo "Error: .yamllint.strict not found"
-            exit 1
-          fi
-
-          # Get changed files, excluding .github directory
-          changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | \
-            grep '\.yml$' | grep -v '^.github/' || true)
-
-          for file in $changed_files; do
-            echo "Validating $file..."
-
-            # Strict YAML syntax validation
-            yamllint -c .yamllint.strict "$file" || exit 1
-
-            # Additional validation can still be performed with yq if needed
-            yq e '
-              .description and
-              .functions and
-              (.functions[] |
-                select(has("description") and
-                       has("parameters") and
-                       (has("container") or has("cmdline"))))
-            ' "$file" || exit 1
-          done
-
       - name: Post validation status
         if: always()
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea #7.0.1
         with:
           script: |
-            let validation_status;
-            if ('${{ steps.robopages-validation.outcome }}' === 'success') {
-              validation_status = '✅ Primary validation successful';
-            } else if ('${{ steps.fallback-validation.outcome }}' === 'success') {
-              validation_status = '⚠️ Primary validation failed, but fallback validation passed';
-            } else {
-              validation_status = '❌ Both primary and fallback validations failed';
-            }
+            const validation_status = '${{ steps.robopages-validation.outcome }}' === 'success'
+              ? '✅ Validation successful'
+              : '❌ Validation failed';
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Validation Results\n${validation_status}\n\nPlease ensure your contribution follows the required format in \`.yamllint.strict\`.`
+              body: `## Validation Results\n${validation_status}\n\nPlease ensure your contribution follows the required format.`
             });
