@@ -14,7 +14,6 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
-      #issues: write
 
     steps:
       - name: Checkout code
@@ -68,9 +67,10 @@ jobs:
               ? '✅ Validation successful'
               : '❌ Validation failed';
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Validation Results\n${validation_status}\n\nPlease ensure your contribution follows the required format.`
+              pull_number: context.issue.number,
+              body: `## Validation Results\n${validation_status}\n\nPlease ensure your contribution follows the required format.`,
+              event: 'COMMENT'
             });
