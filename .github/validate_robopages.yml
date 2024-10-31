@@ -40,7 +40,7 @@ jobs:
               return 1
             }
 
-            docker pull dreadnode/robopages:latest@sha256:2e355b1c46682af2fb586648016c7a28f113a407763b37c74251ae2050b396bb # f65195e7aaf5
+            docker pull dreadnode/robopages:latest
 
             # Run validation
             docker run --rm \
