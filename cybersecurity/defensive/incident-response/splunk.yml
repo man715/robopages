@@ -13,6 +13,10 @@ functions:
           - index=main error
           - index=main | stats count by source
           - index=main | search "error"
+
+    container:
+      image: splunk/splunk
+
     cmdline:
       - splunk
       - search
