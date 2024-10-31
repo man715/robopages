@@ -1,0 +1,19 @@
+description: Graphinder is a tool that extracts all GraphQL endpoints from a given domain.
+
+functions:
+  graphinder_url_scan:
+    description: Extract all GraphQL endpoints from a given domain.
+    parameters:
+      target:
+        type: string
+        description: The URL of the target to scan.
+        examples:
+          - https://graphql-pokemon.vercel.app/
+
+    container:
+      image: escapetech/graphinder
+
+    cmdline: # https://github.com/Escape-Technologies/graphinder
+      - graphinder
+      - --domain
+      - ${target}
