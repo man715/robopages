@@ -1,0 +1,76 @@
+name: Validate Contributions
+
+on:
+  pull_request:
+    paths:
+      - '**.yml'
+      - '!.github/**'
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # 3.7.1
+
+      - name: Validate Contribution Files
+        id: robopages-validation
+        continue-on-error: true
+        run: |
+          validate_file() {
+            local file="$1"
+
+            if [[ ! "$file" =~ ^[a-zA-Z0-9_\-./]+\.yml$ ]]; then
+              echo "Invalid file path characters: $file"
+              return 1
+            }
+
+            if [[ "$file" == *"../"* ]]; then
+              echo "Directory traversal attempt detected: $file"
+              return 1
+            }
+
+            docker pull dreadnode/robopages:latest
+
+            # Run validation
+            docker run --rm \
+              -v $(pwd):/workspace \
+              -w /workspace \
+              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")"
+          }
+
+          # Get changed files, excluding .github directory
+          changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | \
+            grep '\.yml$' | grep -v '^.github/' || true)
+
+          # Validate each changed file
+          for file in $changed_files; do
+            echo "Validating $file..."
+            validate_file "$file" || exit 1
+          done
+
+      - name: Post validation status
+        if: always()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea #7.0.1
+        with:
+          script: |
+            const validation_status = '${{ steps.robopages-validation.outcome }}' === 'success'
+              ? '✅ Validation successful'
+              : '❌ Validation failed';
+
+            github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              body: `## Validation Results\n${validation_status}\n\nPlease ensure your contribution follows the required format.`,
+              event: 'COMMENT'
+            });
