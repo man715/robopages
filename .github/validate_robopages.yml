@@ -1,10 +1,10 @@
 name: Validate Contributions
 
 on:
-  pull_request:
+  pull_request_target:
     paths:
-      - '**.yml'
-      - '!.github/**'
+      - "**.yml"
+      - "!.github/**"
     branches:
       - main
 
