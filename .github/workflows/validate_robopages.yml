@@ -7,6 +7,7 @@ on:
       - "!.github/**"
     branches:
       - main
+      - examples/webapp-info-gathering/feroxbuster
 
 jobs:
   validate:
