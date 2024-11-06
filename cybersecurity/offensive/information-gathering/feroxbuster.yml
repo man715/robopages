@@ -1,0 +1,111 @@
+description: feroxbuster is a tool designed to perform Forced Browsing. Forced browsing is an attack where the aim is to enumerate and access resources that are not referenced by the web application, but are still accessible by an attacker.
+
+functions:
+  feroxbuster_bruteforce_file_extensions:
+    description: "Brute-forces .pdf, .js, .html, .php, .txt, .json, and .docx lookups to each target with Burp proxy."
+    parameters:
+      target:
+        type: string
+        description: The URL of the target to scan.
+        examples:
+          - https://target.tld
+
+    container:
+      platform: linux/arm64/v8
+      image: epi052/feroxbuster
+      args:
+        - --net=host
+    cmdline:
+      - feroxbuster
+      - -u
+      - ${target}
+      - -x
+      - pdf,js,html,php,txt,json,docx
+
+  feroxbuster_burp_bruteforce_file_extensions: # https://github.com/epi052/feroxbuster
+    description: "Brute-forces .pdf, .js, .html, .php, .txt, .json, and .docx lookups to each target with Burp proxy."
+    parameters:
+      target:
+        type: string
+        description: The URL of the target to scan.
+        examples:
+          - https://target.tld
+      proxy:
+        type: string
+        description: The upstream proxy dstip and dstport
+        examples:
+          - http://127.0.0.1:8080 # burp default
+
+    container:
+      platform: linux/arm64/v8
+      image: epi052/feroxbuster
+      args:
+        - --net=host
+
+    cmdline: # https://epi052.github.io/feroxbuster-docs/docs/examples/core-features/
+      - feroxbuster
+      - -u
+      - ${target}
+      - -x
+      - "pdf,js,html,php,txt,json,docx"
+      - --insecure
+      - --proxy
+      - ${proxy}
+
+  feroxbuster_burp_extract_links_from_responses: # https://github.com/epi052/feroxbuster
+    description: "Search through the body of valid responses (html, javascript, etc…) for additional endpoints to scan. This turns feroxbuster into a hybrid that looks for both linked and unlinked content."
+    parameters:
+      target:
+        type: string
+        description: The URL of the target to scan.
+        examples:
+          - https://target.tld
+      proxy:
+        type: string
+        description: The upstream proxy dstip and dstport
+        examples:
+          - http://127.0.0.1:8080 # burp default
+
+    container:
+      platform: linux/arm64/v8
+      image: epi052/feroxbuster
+      args:
+        - --net=host
+
+    cmdline: # https://epi052.github.io/feroxbuster-docs/docs/examples/core-features/
+      - feroxbuster
+      - -u
+      - ${target}
+      - --insecure
+      - --proxy
+      - ${proxy}
+      - --extract-links
+
+  feroxbuster_burp_random_user_agent_scan: # https://github.com/epi052/feroxbuster
+    description: "--random-agent selects a User-Agent value from one of the values below and includes it in that particular request"
+    parameters:
+      target:
+        type: string
+        description: The URL of the target to scan.
+        examples:
+          - https://target.tld
+      proxy:
+        type: string
+        description: The upstream proxy dstip and dstport
+        examples:
+          - http://127.0.0.1:8080 # burp default
+
+    container:
+      platform: linux/arm64/v8
+      image: epi052/feroxbuster
+      args:
+        - --net=host
+
+    cmdline: # https://epi052.github.io/feroxbuster-docs/docs/examples/core-features/
+      - feroxbuster
+      - -u
+      - ${target}
+      - --insecure
+      - --proxy
+      - ${proxy}
+      - --random-agent

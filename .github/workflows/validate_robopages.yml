@@ -32,12 +32,12 @@ jobs:
             if [[ ! "$file" =~ ^[a-zA-Z0-9_\-./]+\.yml$ ]]; then
               echo "Invalid file path characters: $file"
               return 1
-            }
+            fi
 
             if [[ "$file" == *"../"* ]]; then
               echo "Directory traversal attempt detected: $file"
               return 1
-            }
+            fi
 
             docker pull dreadnode/robopages:latest
 
