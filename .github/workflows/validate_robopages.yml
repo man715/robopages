@@ -3,8 +3,8 @@ name: Validate Contributions
 on:
   pull_request:
     paths:
-      - "**.yml"
-      - "!.github/**"
+      - '**.yml'
+      - '!.github/**'
     branches:
       - main
 
