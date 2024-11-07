@@ -45,11 +45,13 @@ jobs:
 
             docker pull dreadnode/robopages:latest
 
-            # Run validation
+            # Run validation with Docker socket mounted
             docker run --rm \
               -v $(pwd):/workspace \
+              -v /var/run/docker.sock:/var/run/docker.sock \
               -w /workspace \
-              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")"
+              --privileged \
+              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")" --skip-docker
           }
 
           # Get changed files using GitHub's provided variables
