@@ -33,7 +33,7 @@ jobs:
           validate_file() {
             local file="$1"
 
-            if [[ ! "$file" =~ ^[a-zA-Z0-9_\-./]+\.yml$ ]]; then
+            if [[ ! "$file" =~ ^([a-zA-Z0-9_\-]+/)*[a-zA-Z0-9_\-]+\.yml$ ]]; then
               echo "Invalid file path characters: $file"
               return 1
             fi
