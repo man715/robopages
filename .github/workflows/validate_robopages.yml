@@ -18,6 +18,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          fetch-depth: 0  # Fetch all history
+          ref: ${{ github.head_ref }}  # Checkout the PR branch
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # 3.7.1
@@ -29,7 +32,7 @@ jobs:
           validate_file() {
             local file="$1"
 
-            if [[ ! "$file" =~ ^[a-zA-Z0-9_\-./]+\.yml$ ]]; then
+            if [[ ! "$file" =~ ^([a-zA-Z0-9_\-]+/)*[a-zA-Z0-9_\-]+\.yml$ ]]; then
               echo "Invalid file path characters: $file"
               return 1
             fi
@@ -41,14 +44,16 @@ jobs:
 
             docker pull dreadnode/robopages:latest
 
-            # Run validation
+            # Run validation with Docker socket mounted
             docker run --rm \
               -v $(pwd):/workspace \
+              -v /var/run/docker.sock:/var/run/docker.sock \
               -w /workspace \
-              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")"
+              --privileged \
+              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")" --skip-docker
           }
 
-          # Get changed files, excluding .github directory
+          # Get changed files using GitHub's provided variables
           changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | \
             grep '\.yml$' | grep -v '^.github/' || true)
 
