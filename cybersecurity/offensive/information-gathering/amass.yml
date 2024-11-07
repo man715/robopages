@@ -22,27 +22,6 @@ functions:
       - -d
       - ${target}
 
-  amass_test:
-    description: Perform DNS enumeration and network mapping of systems exposed to the Internet.
-    parameters:
-      target:
-        type: string
-        description: The URL of the target to scan.
-        examples:
-          - https://target.tld
-
-    container:
-      image: caffix/amass
-
-    cmdline:
-      - amass
-      - enum
-      - -brute
-      - -min-for-recursive
-      - '2'
-      - -d
-      - ${target}
-
   amass_intel:
     description: Collect open source intelligence for investigation of the target organization.
     parameters:
