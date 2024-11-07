@@ -7,6 +7,7 @@ on:
       - '!.github/**'
     branches:
       - main
+      - workflow/fix-sha-ref-issues
 
 jobs:
   validate:
