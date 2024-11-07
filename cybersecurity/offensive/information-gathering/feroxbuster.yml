@@ -11,7 +11,7 @@ functions:
           - https://target.tld
 
     container:
-      platform: linux/arm64/v8
+      platform: linux/amd64
       image: epi052/feroxbuster
       args:
         - --net=host
@@ -37,7 +37,7 @@ functions:
           - http://127.0.0.1:8080 # burp default
 
     container:
-      platform: linux/arm64/v8
+      platform: linux/amd64
       image: epi052/feroxbuster
       args:
         - --net=host
@@ -67,7 +67,7 @@ functions:
           - http://127.0.0.1:8080 # burp default
 
     container:
-      platform: linux/arm64/v8
+      platform: linux/amd64
       image: epi052/feroxbuster
       args:
         - --net=host
@@ -96,7 +96,7 @@ functions:
           - http://127.0.0.1:8080 # burp default
 
     container:
-      platform: linux/arm64/v8
+      platform: linux/amd64
       image: epi052/feroxbuster
       args:
         - --net=host
