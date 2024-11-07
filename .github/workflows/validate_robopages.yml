@@ -19,6 +19,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          fetch-depth: 0  # Fetch all history
+          ref: ${{ github.head_ref }}  # Checkout the PR branch
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # 3.7.1
@@ -49,11 +52,8 @@ jobs:
               dreadnode/robopages:latest validate --path "$(printf '%q' "$file")"
           }
 
-          # Fetch the base branch to ensure we have the commit history
-          git fetch origin ${{ github.base_ref }}
-
-          # Get changed files, excluding .github directory
-          changed_files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | \
+          # Get changed files using GitHub's provided variables
+          changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | \
             grep '\.yml$' | grep -v '^.github/' || true)
 
           # Validate each changed file
