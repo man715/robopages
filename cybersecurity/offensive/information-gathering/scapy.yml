@@ -1,0 +1,187 @@
+description: >
+  Scapy is a Python program that enables the user to send, sniff, dissect and forge network packets. This capability allows construction of tools that can probe, scan or attack networks.
+
+categories:
+  - cybersecurity
+  - offensive
+  - information-gathering
+
+functions:
+  scapy_arp_network_scan:
+    description: Perform an ARP scan of the local network to discover active hosts.
+    parameters:
+      network:
+        type: string
+        description: The network range to scan (CIDR notation)
+        examples:
+          - 192.168.1.0/24
+          - 10.0.0.0/24
+
+    container:
+      force: true
+      preserve_app: true
+      image: travelping/scapy
+      args:
+        - --net=host
+        - --cap-add=NET_RAW
+        - --cap-add=NET_ADMIN
+
+    cmdline:
+      - /usr/bin/python3
+      - -c
+      - |
+        from scapy.all import *
+        network = '${network}'
+        print(f'Scanning network: {network}')
+        ans, unans = arping(network, verbose=True)
+        print('\nActive hosts:')
+        for s,r in ans:
+            print(f'IP: {r[ARP].psrc}\tMAC: {r[ARP].hwsrc}')
+
+  scapy_icmp_ping:
+    description: Send a simple ICMP ping to test host availability.
+    parameters:
+      target:
+        type: string
+        description: The IP address or hostname to ping.
+        examples:
+          - 45.33.32.156
+          - scanme.nmap.org
+
+    container:
+      force: true
+      preserve_app: true
+      image: travelping/scapy
+      args:
+        - --net=host
+        - --cap-add=NET_RAW
+        - --cap-add=NET_ADMIN
+
+    cmdline:
+      - /usr/bin/python3
+      - -c
+      - |
+        from scapy.all import *
+        target = '${target}'
+        print(f'Pinging {target}...')
+        reply = sr1(IP(dst=target)/ICMP(), timeout=2, verbose=True)
+        if reply:
+            print(f'\nResponse received from {reply.src}')
+        else:
+            print('\nNo response received')
+
+  scapy_tcp_traceroute:
+    description: Perform a TCP traceroute to map network path to target.
+    parameters:
+      target:
+        type: string
+        description: The IP address or hostname to trace.
+        examples:
+          - 45.33.32.156
+          - scanme.nmap.org
+
+    container:
+      force: true
+      preserve_app: true
+      image: travelping/scapy
+      args:
+        - --net=host
+        - --cap-add=NET_RAW
+        - --cap-add=NET_ADMIN
+
+    cmdline:
+      - /usr/bin/python3
+      - -c
+      - |
+        from scapy.all import *
+        target = '${target}'
+        print(f'Tracing route to {target}...')
+        result, unans = traceroute(target, maxttl=30, verbose=True)
+        if result:
+            print('\nTrace complete')
+        else:
+            print('\nNo route found')
+
+  scapy_dns_query:
+    description: Send a DNS query to resolve domain information.
+    parameters:
+      domain:
+        type: string
+        description: The domain name to query.
+        examples:
+          - scanme.nmap.org
+          - example.com
+      dns_server:
+        type: string
+        description: The DNS server to query.
+        examples:
+          - 1.1.1.1
+          - 2.2.2.2
+
+    container:
+      force: true
+      preserve_app: true
+      image: travelping/scapy
+      args:
+        - --net=host
+        - --cap-add=NET_RAW
+        - --cap-add=NET_ADMIN
+
+    cmdline:
+      - /usr/bin/python3
+      - -c
+      - |
+        from scapy.all import *
+        domain = '${domain}'
+        dns_server = '${dns_server}'
+        print(f'Querying {domain} using DNS server {dns_server}...')
+        resp = sr1(IP(dst=dns_server)/UDP()/DNS(rd=1,qd=DNSQR(qname=domain)), timeout=2, verbose=True)
+        if resp and resp.haslayer(DNS):
+            print('\nResponse received:')
+            resp[DNS].show()
+        else:
+            print('\nNo response received')
+
+  scapy_tcp_syn_scan:
+    description: Perform a TCP SYN scan on a target.
+    parameters:
+      target:
+        type: string
+        description: The IP address or hostname to scan.
+        examples:
+          - 192.168.1.1
+          - scanme.nmap.org
+      port:
+        type: string
+        description: The port to scan.
+        examples:
+          - 80
+          - 443
+
+    container:
+      force: true
+      preserve_app: true
+      image: travelping/scapy
+      args:
+        - --net=host
+        - --cap-add=NET_RAW
+        - --cap-add=NET_ADMIN
+
+    cmdline:
+      - /usr/bin/python3
+      - -c
+      - |
+        from scapy.all import *
+        target = '${target}'
+        port = int('${port}')
+        print(f'Performing SYN scan on {target}:{port}...')
+        resp = sr1(IP(dst=target)/TCP(dport=port,flags='S'), timeout=2, verbose=True)
+        if resp:
+            if resp.haslayer(TCP) and resp[TCP].flags == 0x12:
+                print(f'\nPort {port} is OPEN')
+            elif resp.haslayer(TCP) and resp[TCP].flags == 0x14:
+                print(f'\nPort {port} is CLOSED')
+            else:
+                print(f'\nUnexpected response for port {port}')
+        else:
+            print(f'\nNo response received for port {port} (filtered)')
