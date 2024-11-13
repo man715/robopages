@@ -1,0 +1,16 @@
+description: File analysis tool.
+
+functions:
+  find_file_type:
+    description: Find the type of a file.
+    parameters:
+      file_path:
+        type: string
+        description: The path to the file to scan.
+        examples:
+          - /path/to/binary
+          - /Applications/Firefox.app/Contents/MacOS/firefox
+
+    cmdline:
+      - /usr/bin/file
+      - ${file_path}
