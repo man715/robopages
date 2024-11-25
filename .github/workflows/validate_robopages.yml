@@ -41,7 +41,7 @@ jobs:
             if [[ "$file" == *"../"* ]]; then
               echo "Directory traversal attempt detected: $file"
               return 1
-            }
+            fi
 
             # Create copy and inject categories if missing
             cp "$file" "$tmp_file"
