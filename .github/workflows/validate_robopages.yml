@@ -31,6 +31,7 @@ jobs:
         run: |
           validate_file() {
             local file="$1"
+            local tmp_file="/tmp/$(basename $file)"
 
             if [[ ! "$file" =~ ^([a-zA-Z0-9_\-]+/)*[a-zA-Z0-9_\-]+\.yml$ ]]; then
               echo "Invalid file path characters: $file"
@@ -40,17 +41,29 @@ jobs:
             if [[ "$file" == *"../"* ]]; then
               echo "Directory traversal attempt detected: $file"
               return 1
+            }
+
+            # Create copy and inject categories if missing
+            cp "$file" "$tmp_file"
+            if ! grep -q "categories:" "$tmp_file"; then
+              # Extract categories from path
+              categories=$(dirname "$file" | tr '/' '\n' | awk 'NF' | sed 's/^/  - /')
+              # Inject categories into YAML
+              echo -e "\ncategories:\n$categories" >> "$tmp_file"
             fi
 
             docker pull dreadnode/robopages:latest
 
-            # Run validation with Docker socket mounted
+            # Run validation with Docker socket mounted using temp file
             docker run --rm \
               -v $(pwd):/workspace \
               -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "$tmp_file:/workspace/$(basename $file)" \
               -w /workspace \
               --privileged \
-              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")" --skip-docker
+              dreadnode/robopages:latest validate --path "$(basename $file)" --skip-docker
+
+            rm "$tmp_file"
           }
 
           # Get changed files using GitHub's provided variables
