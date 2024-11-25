@@ -1,0 +1,77 @@
+# ffufai.yml
+description: >
+  ffufai is an AI-powered web fuzzing tool that combines the power of ffuf with
+  artificial intelligence to find hidden endpoints and vulnerabilities in web applications.
+
+categories:
+  - cybersecurity
+  - offensive
+  - information-gathering
+
+functions:
+  ffufai_default_scan:
+    description: Perform a default fuzzing scan against a web target
+    parameters:
+      target:
+        type: string
+        description: The target URL to fuzz
+        examples:
+          - https://example.com
+          - http://localhost:8080
+      wordlist:
+        type: string
+        description: Wordlist to use for fuzzing
+        default: "common.txt"
+        examples:
+          - "directories.txt"
+          - "endpoints.txt"
+
+    container:
+      build:
+        path: ${cwd}/ffufai.Dockerfile
+        name: ffufai_local
+      args:
+        - --net=host
+      volumes:
+        - ${cwd}:/data
+
+    cmdline:
+      - /app/ffufai
+      - -u
+      - ${target}
+      - -w
+      - /app/wordlists/${wordlist}
+
+  ffufai_full_scan:
+    description: Perform comprehensive fuzzing with AI analysis
+    parameters:
+      target:
+        type: string
+        description: The target URL to fuzz
+      wordlist:
+        type: string
+        description: Wordlist to use for fuzzing
+        default: "big.txt"
+      threads:
+        type: integer
+        description: Number of concurrent threads
+        default: 40
+
+    container:
+      build:
+        path: ${cwd}/ffufai.Dockerfile
+        name: ffufai_local
+      args:
+        - --net=host
+      volumes:
+        - ${cwd}:/data
+
+    cmdline:
+      - /app/ffufai
+      - -u
+      - ${target}
+      - -w
+      - /app/wordlists/${wordlist}
+      - -t
+      - ${threads}
+      - --ai
