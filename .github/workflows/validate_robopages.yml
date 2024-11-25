@@ -50,7 +50,7 @@ jobs:
               -v /var/run/docker.sock:/var/run/docker.sock \
               -w /workspace \
               --privileged \
-              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")" --skip-docker --skip-categories
+              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")" --skip-docker
           }
           # Get changed files using GitHub's provided variables
           changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | \
