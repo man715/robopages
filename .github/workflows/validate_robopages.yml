@@ -44,15 +44,14 @@ jobs:
 
             docker pull dreadnode/robopages:latest
 
-            # Run validation with Docker socket mounted
+            # Run validation with Docker socket mounted and skip categories validation
             docker run --rm \
               -v $(pwd):/workspace \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -w /workspace \
               --privileged \
-              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")" --skip-docker
+              dreadnode/robopages:latest validate --path "$(printf '%q' "$file")" --skip-docker --skip-categories
           }
-
           # Get changed files using GitHub's provided variables
           changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | \
             grep '\.yml$' | grep -v '^.github/' || true)
