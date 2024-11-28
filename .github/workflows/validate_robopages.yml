@@ -27,11 +27,11 @@ jobs:
 
       - name: Validate Contribution Files
         id: robopages-validation
-        continue-on-error: true
         run: |
           validate_file() {
             local file="$1"
             local tmp_file="/tmp/$(basename $file)"
+            local validation_status=0
 
             if [[ ! "$file" =~ ^([a-zA-Z0-9_\-]+/)*[a-zA-Z0-9_\-]+\.yml$ ]]; then
               echo "Invalid file path characters: $file"
@@ -54,17 +54,21 @@ jobs:
 
             docker pull dreadnode/robopages:latest
 
-            # Run validation with Docker socket mounted using temp file
+            # Run validation and capture the exit status
             docker run --rm \
               -v $(pwd):/workspace \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -v "$tmp_file:/workspace/$(basename $file)" \
               -w /workspace \
               --privileged \
-              dreadnode/robopages:latest validate --path "$(basename $file)" --skip-docker
+              dreadnode/robopages:latest validate --path "$(basename $file)" --skip-docker || validation_status=$?
 
             rm "$tmp_file"
+            return $validation_status
           }
+
+          # Initialize overall status
+          overall_status=0
 
           # Get changed files using GitHub's provided variables
           changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | \
@@ -73,8 +77,13 @@ jobs:
           # Validate each changed file
           for file in $changed_files; do
             echo "Validating $file..."
-            validate_file "$file" || exit 1
+            if ! validate_file "$file"; then
+              overall_status=1
+              echo "::error::Validation failed for $file"
+            fi
           done
+
+          exit $overall_status
 
       - name: Post validation status
         if: always()
