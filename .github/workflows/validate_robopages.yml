@@ -90,7 +90,9 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea #7.0.1
         with:
           script: |
-            const validation_status = '${{ steps.robopages-validation.outcome }}' === 'success' ? '✅ Validation successful' : '❌ Validation failed';
+            const validation_status = process.env.STATE_validation === '0'
+              ? '✅ Validation successful'
+              : '❌ Validation failed';
             const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
             const timestamp = new Date().toISOString();
             const body = [
@@ -113,4 +115,4 @@ jobs:
               pull_number: context.issue.number,
               body: body,
               event: 'COMMENT'
-            });
+            });�
