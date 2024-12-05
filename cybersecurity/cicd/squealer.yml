@@ -1,0 +1,37 @@
+description: Squealer is a tool that finds secrets like keys, tokens and passwords in your code. It scans remote Git repositories for potential credential leaks.
+
+categories:
+  - cybersecurity
+  - cicd
+
+functions:
+  squealer_scan_git_repo:
+    description: Scan a remote git repository for secrets and credentials
+    parameters:
+      repository:
+        type: string
+        description: Git repository URL (SSH format)
+        examples:
+          - "git@github.com:username/repo.git"
+          - "git@github.com:owenrumney/woopsie.git"
+    container:
+      force: true
+      image: squealer:latest
+    cmdline:
+      - ${repository}
+
+  squealer_scan_everything_git_repo:
+    description: Scan a remote git repository and history for secrets and credentials with everything flag
+    parameters:
+      repository:
+        type: string
+        description: Git repository URL (SSH format)
+        examples:
+          - "git@github.com:username/repo.git"
+          - "git@github.com:owenrumney/woopsie.git"
+    container:
+      force: true
+      image: squealer:latest
+    cmdline:
+      - ${repository}
+      - --everything
