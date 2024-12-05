@@ -2,9 +2,6 @@ name: Validate Contributions
 
 on:
   pull_request:
-    types:
-      - edited  # Trigger when the PR is updated (e.g., title, description, or labels)
-      - reopened  # Trigger when the PR is reopened
     paths:
       - '**.yml'
       - '!.github/**'
