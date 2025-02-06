@@ -50,7 +50,7 @@ functions:
       - --headless
       - --web
       - -f
-      - /eyewitness/targets.txt
+      - ${target_file}
       - --no-prompt
       - -d
       - /eyewitness/screens/report
@@ -71,13 +71,13 @@ functions:
         name: eyewitness_local
       volumes:
         - ${cwd}/eyewitness:/eyewitness
-        - ${cwd}/${xml_file}:/eyewitness/scan.xml
+        - ${cwd}/${nmap_xml_file}:/eyewitness/scan.xml
 
     cmdline:
       - --headless
       - --web
       - -x
-      - /eyewitness/scan.xml
+      - /eyewitness/${nmap_xml_file}
       - --no-prompt
       - -d
       - /eyewitness/screens/report
