@@ -1,0 +1,125 @@
+description: >
+  EyeWitness is designed to take screenshots of websites, provide some server header info, and identify default credentials if possible.
+
+functions:
+  eyewitness_single:
+    description: Capture screenshot and information from a single URL
+    parameters:
+      target:
+        type: string
+        description: The URL to capture
+        examples:
+          - https://example.com
+
+    container:
+      platform: linux/amd64
+      build:
+        path: ${cwd}/eyewitness.Dockerfile
+        name: eyewitness_local
+      volumes:
+        - ${cwd}/eyewitness:/eyewitness
+
+    cmdline:
+      - --headless
+      - --web
+      - --single
+      - ${target}
+      - --no-prompt
+      - -d
+      - /eyewitness/screens/report
+
+  eyewitness_file:
+    description: Capture screenshots and information from a file containing URLs
+    parameters:
+      target_file:
+        type: string
+        description: File containing URLs to scan (one per line)
+        examples:
+          - urls.txt
+
+    container:
+      platform: linux/amd64
+      build:
+        path: ${cwd}/eyewitness.Dockerfile
+        name: eyewitness_local
+      volumes:
+        - ${cwd}/eyewitness:/eyewitness
+        - ${cwd}/${target_file}:/eyewitness/targets.txt
+
+    cmdline:
+      - --headless
+      - --web
+      - -f
+      - ${target_file}
+      - --no-prompt
+      - -d
+      - /eyewitness/screens/report
+
+  eyewitness_nmap_xml:
+    description: Capture screenshots from a Nmap XML output file
+    parameters:
+      xml_file:
+        type: string
+        description: Path to Nmap XML output file
+        examples:
+          - nmap_output.xml
+
+    container:
+      platform: linux/amd64
+      build:
+        path: ${cwd}/eyewitness.Dockerfile
+        name: eyewitness_local
+      volumes:
+        - ${cwd}/eyewitness:/eyewitness
+        - ${cwd}/${nmap_xml_file}:/eyewitness/scan.xml
+
+    cmdline:
+      - --headless
+      - --web
+      - -x
+      - /eyewitness/${nmap_xml_file}
+      - --no-prompt
+      - -d
+      - /eyewitness/screens/report
+
+  eyewitness_custom_ports:
+    description: Scan specific URLs with custom HTTP/HTTPS ports
+    parameters:
+      target:
+        type: string
+        description: The URL to capture
+        examples:
+          - https://example.com
+      http_ports:
+        type: string
+        description: Additional HTTP ports (comma-separated)
+        examples:
+          - "8080,8081"
+        default: ""
+      https_ports:
+        type: string
+        description: Additional HTTPS ports (comma-separated)
+        examples:
+          - "8443,9443"
+        default: ""
+
+    container:
+      platform: linux/amd64
+      build:
+        path: ${cwd}/eyewitness.Dockerfile
+        name: eyewitness_local
+      volumes:
+        - ${cwd}/eyewitness:/eyewitness
+
+    cmdline:
+      - --headless
+      - --web
+      - --single
+      - ${target}
+      - --no-prompt
+      - --add-http-ports
+      - ${http_ports}
+      - --add-https-ports
+      - ${https_ports}
+      - -d
+      - /eyewitness/screens/report
