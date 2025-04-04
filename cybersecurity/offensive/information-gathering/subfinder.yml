@@ -1,0 +1,25 @@
+description: This page uses subfinder for subdomain enumeration.
+
+functions:
+  enum_domain_subdomains:
+    description: Enumerate subdomains of a target host.
+    parameters:
+      target:
+        type: string
+        description: The domain name to enumerate subdomains for.
+
+    container:
+      image: projectdiscovery/subfinder
+      args:
+        - --net=host
+      volumes:
+        - ${cwd}:/data
+
+    cmdline:
+      - -domain
+      - -domain
+      - ${target}
+      - -recursive
+      - -all
+      - -o 
+      - /data/sf${cwd}.txt

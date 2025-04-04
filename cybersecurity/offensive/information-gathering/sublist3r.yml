@@ -1,0 +1,23 @@
+description: This page uses subfinder for subdomain enumeration.
+
+functions:
+  enum_domain_subdomains_sublist3r:
+    description: Enumerate subdomains of a target host.
+    parameters:
+      target:
+        type: string
+        description: The domain name to enumerate subdomains for.
+
+    container:
+      image: hypnza/sublist3r
+      args:
+        - --net=host
+      volumes:
+        - /home/apatton/.robopages:/data
+
+    cmdline:
+      - -d
+      - -d
+      - ${target}
+      - -o
+      - /data/sublist3r_subdomains_.txt
